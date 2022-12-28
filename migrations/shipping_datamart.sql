@@ -8,8 +8,8 @@ create table public.shipping_datamart (
   is_shipping_finish boolean,
   delay_day_at_shipping numeric(14,0),
   payment_amount numeric(14,2),
-  vat numeric(14,3),
-  profit numeric(14,2)
+  vat numeric(14,5),
+  profit numeric(14,5)
 );
 insert into public.shipping_datamart (shippingid, vendorid, transfer_type,
 full_day_at_shipping, is_delay, is_shipping_finish, delay_day_at_shipping, payment_amount, vat, profit)
@@ -17,12 +17,12 @@ select
 shipping_info.shippingid,
 vendorid,
 transfer_type,
-date_part('day', age(shipping_end_fact_datetime, shipping_start_fact_datetime)) as full_day_at_shipping,
+extract (day from (shipping_end_fact_datetime - shipping_start_fact_datetime)) as full_day_at_shipping,
 cast((case when shipping_end_fact_datetime > shipping_plan_datetime
 then 1 else 0 end) as boolean) as is_delay,
 cast((case when status = 'finished' then 1 else 0 end) as boolean) as is_shipping_finish,
 (case when shipping_end_fact_datetime > shipping_plan_datetime
-then date_part('day',age(shipping_end_fact_datetime, shipping_plan_datetime)) else 0 end)
+then extract (day from (shipping_end_fact_datetime - shipping_plan_datetime)) else 0 end)
 as delay_day_at_shipping,
 payment_amount,
 (payment_amount*(shipping_country_base_rate + agreement_rate + shipping_transfer_rate)) as vat,
